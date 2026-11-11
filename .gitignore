@@ -1,0 +1,4 @@
+*.img
+*.tar.gz
+*.log
+.DS_Store
