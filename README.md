@@ -30,12 +30,14 @@ sudo ./scripts/openwrt-overlay-mount.sh --unmount
 
 
 What It Does
+
 openwrt-rootfs-shrink.sh shrinks the rootfs partition of an OpenWrt SD card back to any target size you choose, handling all three possible layouts automatically:
-Layout detected	Action taken
-SquashFS + ext4 overlay	Shrink the ext4 filesystem in-place with resize2fs, then shrink the partition
-SquashFS + f2fs overlay	Back up the overlay, recreate it at the smaller size, restore, then shrink the partition (requires --allow-f2fs-rebuild)
-SquashFS only (no overlay)	Shrink the partition entry only; no filesystem work
-The freed space is left unallocated at the end of the device — the script never creates new partitions. That's your call.
+
+    SquashFS + ext4 overlay	Shrink the ext4 filesystem in-place with resize2fs, then shrink the partition
+
+    SquashFS + f2fs overlay	Back up the overlay, recreate it at the smaller size, restore, then shrink the partition (requires --allow-f2fs-rebuild)
+
+    SquashFS only (no overlay)	Shrink the partition entry only; no filesystem work
 
 Why Not Just Use GParted?
 Because the overlay lives at an offset that GParted never looks at. Shrinking the partition table entry without first shrinking the overlay's filesystem produces a device that:
@@ -45,6 +47,7 @@ Because the overlay lives at an offset that GParted never looks at. Shrinking th
     • makes the kernel refuse to mount the overlay (or mount it read-only after I/O errors),
     
     • and bricks the boot because OpenWrt's mount_root cannot attach the writable layer.
+
 The correct order is always filesystem first, partition second — and only a tool that knows where the overlay is can do the first step. That is what this script is for.
 
 Features
@@ -97,11 +100,17 @@ sudo ./openwrt-rootfs-shrink.sh -n --size 4G /dev/sdb
 sudo ./openwrt-rootfs-shrink.sh --size 4G --backup-image /root/openwrt-sd.img /dev/sdb
 ```
 Options
+
 -s, --size SIZE	Target partition size. Default 4G. Accepts K, M, G suffixes.
+
 -b, --backup-image FILE	Write a full-disk image to FILE before making changes. Strongly recommended.
+
 -y, --yes	Skip interactive confirmation prompts.
+
 -n, --dry-run	Print what would happen without executing any destructive command.
+
 --allow-f2fs-rebuild	Required if the overlay is f2fs, since f2fs cannot be shrunk in place.
+
 -h, --help	Show usage.
 
 
